@@ -43,8 +43,7 @@ Route::middleware(['auth:sanctum', 'role:2'])->group(function () {
     });
 });
 
-Route::get('/posts', [PostController::class, 'index']);
-Route::post('/posts', [PostController::class, 'store']);
+
 
 Route::get('/test', function () {
     return response()->json([
@@ -59,3 +58,4 @@ Route::post('/users', [UserController::class, 'store']);
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/areas', [UserController::class, 'getAreas']);
+Route::get('/roles', [UserController::class, 'getRoles']);

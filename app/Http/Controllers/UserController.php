@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Area;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -14,15 +15,17 @@ class UserController extends Controller
      * Display a listing of all users with relationships.
      */
     public function index()
-    {
-        // Fetching users with their assigned area info
-        $users = User::with(['area'])->get();
-        
-        return response()->json([
-            'status' => 'success',
-            'data' => $users
-        ], 200);
-    }
+{
+    
+    $users = User::with(['area', 'role_data'])
+                 ->where('status', 'active') 
+                 ->get();
+    
+    return response()->json([
+        'status' => 'success',
+        'data' => $users
+    ], 200);
+}
 
     /**
      * Store a newly created user in the database.
@@ -36,11 +39,12 @@ class UserController extends Controller
         'password'  => 'required|min:6',
         'role'      => 'required|integer', 
         'area_id'   => 'required|exists:areas,id',
-        'telephone' => 'required|string|max:15|unique:users,telephone', // ✅ FIXED: Added unique rule
+        'telephone' => 'required|string|max:15|unique:users,telephone', 
+        'status'    => 'active',
     ], [
         // Custom Professional Messages
         'email.unique'       => 'This email address is already registered in FloodSense.',
-        'telephone.unique'   => 'This telephone number is already assigned to another user.', // ✅ FIXED: Added custom message
+        'telephone.unique'   => 'This telephone number is already assigned to another user.', 
         'area_id.exists'     => 'The selected monitoring area does not exist.',
         'telephone.required' => 'A contact number is required for emergency alerts.'
     ]);
@@ -136,10 +140,10 @@ class UserController extends Controller
  */
 public function destroy($id)
 {
-    // 1. Find the user
+    
     $user = User::find($id);
 
-    // 2. Check if user exists
+   
     if (!$user) {
         return response()->json([
             'status' => 'failed', 
@@ -147,27 +151,31 @@ public function destroy($id)
         ], 404);
     }
 
-    // 3. Security Check: Prevent deleting yourself (Highly Professional)
+    // 3. Security Check
     if (auth()->check() && auth()->id() == $id) {
         return response()->json([
             'status' => 'failed',
-            'message' => 'Security Violation: You cannot delete your own administrative account.'
+            'message' => 'Security Violation: You cannot deactivate your own administrative account.'
         ], 403);
     }
 
     try {
-        // 4. Perform Delete
-        $user->delete();
+        // 4. Soft Delete 
+        
+        $user->update([
+            'status' => 'inactive'
+        ]);
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'User account and access permissions revoked successfully.'
+            'message' => 'User account deactivated and system access permissions revoked successfully.'
         ], 200);
 
     } catch (\Exception $e) {
+        
         return response()->json([
             'status'  => 'error',
-            'message' => 'Database Error: Could not remove user. They might be linked to active incident reports.'
+            'message' => 'System Error: Could not update user status. Please contact the technical administrator.'
         ], 500);
     }
 }
@@ -176,6 +184,14 @@ public function destroy($id)
         return response()->json([
             'status' => 'success',
             'data'   => Area::all()
+        ], 200);
+    }
+
+    public function getRoles()
+    {
+        return response()->json([
+            'status' => 'success',
+            'data'   => Role::all()
         ], 200);
     }
 }

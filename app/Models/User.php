@@ -21,7 +21,8 @@ class User extends Authenticatable
         'password',
         'role',      // This links to your roles table
         'area_id',   // This links to your areas table
-        'telephone', // Add this since we discussed it earlier
+        'telephone',
+        'status', // Add this since we discussed it earlier
     ];
 
     // Add this relationship method
