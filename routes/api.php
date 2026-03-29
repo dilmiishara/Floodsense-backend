@@ -5,6 +5,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\UserController;
+
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -49,3 +51,11 @@ Route::get('/test', function () {
         'message' => 'API working'
     ]);
 });
+
+
+//Manage User Routes
+Route::get('/users', [UserController::class, 'index']);
+Route::post('/users', [UserController::class, 'store']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::get('/areas', [UserController::class, 'getAreas']);
