@@ -13,16 +13,17 @@ class RoleMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle($request, Closure $next, $role)
-{
-    if (!$request->user()) {
-        return response()->json(['message' => 'Unauthenticated'], 401);
-    }
+    public function handle($request, Closure $next, $roleId)
+    {
+        if (!$request->user()) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
 
-    if ($request->user()->role !== $role) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
+        // Check role_id instead of role name
+        if ($request->user()->role_id != $roleId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
-    return $next($request);
-}
+        return $next($request);
+    }
 }

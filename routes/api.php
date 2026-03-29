@@ -17,8 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    
+Route::middleware(['auth:sanctum', 'role:1'])->group(function () {
+
     Route::get('/admin/dashboard', function () {
         return response()->json([
             'message' => 'Admin Dashboard'
@@ -28,14 +28,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:1'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return "Admin Only Dashboard";
     });
 });
 
 // Officer routes
-Route::middleware(['auth:sanctum', 'role:officer'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:2'])->group(function () {
     Route::get('/officer/dashboard', function () {
         return "Technical Officer Dashboard";
     });
