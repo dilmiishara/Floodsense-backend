@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AlertController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -59,3 +60,25 @@ Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
+
+
+
+//Manage Alerts
+Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
+Route::get('/alerts/history', [AlertController::class, 'getAlertHistory']);
+Route::post('/alerts/generate', [AlertController::class, 'store']); 
+Route::put('/alerts/{id}/resolve', [AlertController::class, 'resolve']);
+
+use App\Http\Controllers\Api\SensorDataController;
+
+// This allows Postman to "talk" to your controller
+Route::post('/sensor-data', [SensorDataController::class, 'store']);
+
+
+use App\Http\Controllers\Api\AlertThresholdController;
+
+// Get all thresholds for the table
+Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
+
+// Update or Create a threshold
+Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
