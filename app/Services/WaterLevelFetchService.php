@@ -23,6 +23,9 @@ class WaterLevelFetchService
             $rows     = [];
 
             foreach ($stations as $s) {
+                // ── Only save Kalu Ganga stations ──
+                if ($s['river_name'] !== 'Kalu Ganga') continue;
+
                 $rows[] = [
                     'recorded_at'          => $now,
                     'station_name'         => $s['station_name'],
@@ -40,7 +43,7 @@ class WaterLevelFetchService
 
             DB::table('water_level_logs')->insert($rows);
 
-            return count($rows); // returns how many stations saved
+            return count($rows);
 
         } catch (\Exception $e) {
             Log::error('Water level fetch error: ' . $e->getMessage());
