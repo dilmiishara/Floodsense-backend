@@ -83,6 +83,8 @@ Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
 // Update or Create a threshold
 Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
+
+Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
 // Settings routes
 use App\Http\Controllers\SettingsController;
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);

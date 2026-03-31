@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class AlertController extends Controller
 {
-    // 1. දැනට පවතින Active Alerts ලබා ගැනීම (Tab 1 සඳහා)
+   
     public function getActiveAlerts()
     {
         $alerts = Alert::where('status', 'active')
@@ -16,7 +16,7 @@ class AlertController extends Controller
         return response()->json($alerts);
     }
 
-    // 2. Alert History ලබා ගැනීම (Tab 2 සඳහා)
+   
     public function getAlertHistory()
     {
         $history = Alert::where('status', 'resolved')
@@ -25,7 +25,7 @@ class AlertController extends Controller
         return response()->json($history);
     }
 
-    // 3. අලුතින් Alert එකක් පද්ධතියට එකතු කිරීම (Simulated/Sensor Data)
+   
     public function store(Request $request)
     {
         $request->validate([
@@ -55,7 +55,7 @@ class AlertController extends Controller
         return response()->json(['message' => 'Alert not found'], 404);
     }
 
-    // Status එක 'resolved' කර Update කරනවා
+    
     $alert->update([
         'status' => 'resolved'
     ]);
@@ -65,4 +65,6 @@ class AlertController extends Controller
         'message' => 'Alert resolved and moved to history.'
     ]);
 }
+
+
 }

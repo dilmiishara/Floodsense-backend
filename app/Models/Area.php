@@ -14,7 +14,7 @@ class Area extends Model
     // Supabase table name
     protected $table = 'areas';
 
-    // We removed timestamps in the SQL earlier, so tell Laravel not to look for them
+    
     public $timestamps = false;
 
     protected $fillable = ['name'];

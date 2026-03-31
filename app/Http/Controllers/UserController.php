@@ -108,7 +108,7 @@ class UserController extends Controller
     'role'      => 'integer',
     'area_id'   => 'exists:areas,id',
     'telephone' => 'string|max:15',
-    'password'  => 'nullable|min:6', // ✅ Added: Nullable so it's only validated if provided
+    'password'  => 'nullable|min:6', 
 ], [
     'password.min' => 'The new password must be at least 6 characters long.',
 ]);
@@ -199,4 +199,15 @@ public function destroy($id)
             'data'   => Role::all()
         ], 200);
     }
+
+    public function getFieldOfficers() {
+    
+    $officers = User::with(['area', 'role_data'])
+                    ->where('role', 2) 
+                    ->get();
+    
+    return response()->json($officers);
 }
+}
+
+

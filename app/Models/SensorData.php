@@ -10,7 +10,7 @@ class SensorData extends Model
     use HasFactory;
 
     protected $table = 'sensor_data';
-    public $timestamps = false; // අපි manually created_at පාවිච්චි කරන නිසා
+    public $timestamps = false; 
 
     protected $fillable = [
         'device_id',
@@ -24,7 +24,7 @@ class SensorData extends Model
         'recorded_at'
     ];
 
-    // Sensor එක අයත් ප්‍රදේශය ලබා ගැනීමට
+   
     public function area()
     {
         return $this->belongsTo(Area::class, 'area_id');
