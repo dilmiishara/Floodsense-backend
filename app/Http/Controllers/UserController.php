@@ -34,7 +34,8 @@ class UserController extends Controller
 {
     // 1. Define Validation Rules
     $validate = Validator::make($request->all(), [
-        'name'      => 'required|string|max:255',
+        'first_name' => 'required|string|max:100',
+        'last_name'  => 'required|string|max:100',
         'email'     => 'required|email|unique:users,email',
         'password'  => 'required|min:6',
         'role'      => 'required|integer', 
@@ -43,6 +44,8 @@ class UserController extends Controller
         'status'    => 'active',
     ], [
         // Custom Professional Messages
+        'first_name.required' => 'The user\'s given name is required.',
+         'last_name.required'  => 'The user\'s family name is required.',
         'email.unique'       => 'This email address is already registered in FloodSense.',
         'telephone.unique'   => 'This telephone number is already assigned to another user.', 
         'area_id.exists'     => 'The selected monitoring area does not exist.',
@@ -61,7 +64,8 @@ class UserController extends Controller
     // 3. Create the User
     try {
         $user = User::create([
-            'name'      => $request->name,
+           'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
             'role'      => $request->role,
@@ -71,7 +75,7 @@ class UserController extends Controller
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'User created successfully',
+            'message' => 'User profile for ' . $request->first_name . ' created successfully.',
             'user'    => $user
         ], 201);
 
@@ -98,7 +102,8 @@ class UserController extends Controller
         }
 
        $validate = Validator::make($request->all(), [
-    'name'      => 'string|max:255',
+    'first_name' => 'string|max:100',
+     'last_name'  => 'string|max:100',
     'email'     => 'email|unique:users,email,' . $id,
     'role'      => 'integer',
     'area_id'   => 'exists:areas,id',
@@ -117,7 +122,7 @@ class UserController extends Controller
         }
 
         // Update basic info
-        $user->update($request->only(['name', 'email', 'role', 'area_id', 'telephone']));
+        $user->update($request->only(['first_name', 'last_name', 'email', 'role', 'area_id', 'telephone']));
 
         // Handle password update separately if provided
         if ($request->has('password') && !empty($request->password)) {
@@ -127,7 +132,7 @@ class UserController extends Controller
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'User updated successfully',
+            'message' => 'Personnel information updated successfully.',
             'user'    => $user
         ], 200);
     }
