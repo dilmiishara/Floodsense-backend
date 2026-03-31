@@ -11,7 +11,7 @@ class Role extends Model
 
     protected $table = 'roles';
 
-    // If your roles table in Supabase doesn't have created_at/updated_at, set this to false
+    
     public $timestamps = true; 
 
     protected $fillable = ['name'];
