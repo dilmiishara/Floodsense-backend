@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// app/Http/Controllers/SettingsController.php
-
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -21,12 +19,20 @@ class SettingsController extends Controller
 
         $data = Setting::getSection($section);
 
-        // Cast boolean strings back to actual booleans for the frontend
-        $data = array_map(function ($val) {
-            if ($val === 'true')  return true;
-            if ($val === 'false') return false;
+        $booleanFields = ['emergency_mode', 'maintenance_mode'];
+
+        $data = array_map(function ($val) use (&$data) {
             return $val;
         }, $data);
+
+        // ✅ Properly cast known boolean fields
+        foreach ($booleanFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $raw = $data[$field];
+                // Handles: "1", "0", "true", "false", 1, 0, true, false, ""
+                $data[$field] = filter_var($raw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+        }
 
         return response()->json($data);
     }
@@ -40,7 +46,18 @@ class SettingsController extends Controller
             return response()->json(['error' => 'Invalid section'], 422);
         }
 
-        Setting::saveSection($section, $request->all());
+        $booleanFields = ['emergency_mode', 'maintenance_mode'];
+
+        $payload = $request->all();
+
+        // ✅ Convert booleans to "true"/"false" strings before saving
+        foreach ($booleanFields as $field) {
+            if (array_key_exists($field, $payload)) {
+                $payload[$field] = filter_var($payload[$field], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+            }
+        }
+
+        Setting::saveSection($section, $payload);
 
         return response()->json(['success' => true, 'message' => 'Settings saved.']);
     }
