@@ -65,6 +65,8 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
 
+
+
 //Manage Alerts
 Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
 Route::get('/alerts/history', [AlertController::class, 'getAlertHistory']);
@@ -88,3 +90,9 @@ Route::prefix('safelocations')->group(function () {
     Route::put('/{id}', [SafeLocationController::class, 'update']);  // Update
     Route::delete('/{id}', [SafeLocationController::class, 'destroy']); // Delete
 });
+
+Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
+// Settings routes
+use App\Http\Controllers\SettingsController;
+Route::get('/settings/{section}',  [SettingsController::class, 'show']);
+Route::post('/settings/{section}', [SettingsController::class, 'update']);

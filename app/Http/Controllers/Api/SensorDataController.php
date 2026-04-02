@@ -9,50 +9,83 @@ use App\Models\AlertThreshold;
 use App\Models\Area;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
+use \App\Models\SensorReading;
 class SensorDataController extends Controller
 {
     /**
      * Store and process incoming sensor data
      */
-    public function store(Request $request)
-    {
-        // 1. Validation
-        $request->validate([
-            'area_id'     => 'required|exists:areas,id',
-            'water_level' => 'required|numeric',
-            'rainfall'    => 'required|numeric',
-            'device_id'   => 'nullable|string'
-        ]);
+  public function store(Request $request)
+{
+    
+    $request->validate([
+        'area_id'     => 'required|exists:areas,id',
+        'sensor_id'   => 'required|string',
+        'water_level' => 'nullable|numeric',
+        'rainfall'    => 'nullable|numeric',
+    ]);
 
-        try {
-            // 2. Save the Raw Sensor Entry and load the Area relationship
-            $sensorEntry = SensorData::create([
-                'device_id'   => $request->device_id ?? 'SNSR-MAIN',
-                'area_id'     => $request->area_id,
-                'water_level' => $request->water_level,
-                'rainfall'    => $request->rainfall,
-                'recorded_at' => now(),
-            ])->load('area');
+    try {
+       
+        $sensorEntry = SensorReading::create([
+            'sensor_id'   => $request->sensor_id,
+            'area_id'     => $request->area_id,
+            'water_level' => $request->water_level,
+            'rainfall'    => $request->rainfall,
+            'humidity'    => $request->humidity,
+            'battery_level' => $request->battery_level ?? 100,
+        ])->load('area');
 
-            // 3. Fetch Thresholds for this specific Area
-            $threshold = AlertThreshold::where('area_id', $sensorEntry->area_id)->first();
+        
+        $threshold = AlertThreshold::where('area_id', $sensorEntry->area_id)->first();
 
-            // 4. Automated Alert Logic
-            if ($threshold) {
-                $this->checkAndTriggerAlerts($sensorEntry, $threshold);
+        if ($threshold) {
+            $severity = null;
+            $alertType = "";
+            $message = "";
+
+            // --- WATER LEVEL CHECK ---
+            if ($request->water_level >= $threshold->water_critical_level) {
+                $severity = 'CRITICAL';
+                $alertType = 'Flood';
+                $message = "Critical flood level reached: {$request->water_level}m in {$sensorEntry->area->name}.";
+            } elseif ($request->water_level >= $threshold->water_warning_level) {
+                $severity = 'HIGH';
+                $alertType = 'Flood';
+                $message = "Warning: Water level rising in {$sensorEntry->area->name} ({$request->water_level}m).";
             }
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Sensor data processed successfully.'
-            ], 201);
+            // --- RAINFALL CHECK ---
+            if ($request->rainfall >= $threshold->rain_critical_level) {
+                $severity = 'CRITICAL';
+                $alertType = 'Rainfall';
+                $message = "Extreme rainfall detected in {$sensorEntry->area->name}: {$request->rainfall}mm.";
+            } elseif ($request->rainfall >= $threshold->rain_warning_level) {
+                $severity = 'HIGH';
+                $alertType = 'Rainfall';
+                $message = "Heavy rain recorded in {$sensorEntry->area->name} ({$request->rainfall}mm).";
+            }
 
-        } catch (\Exception $e) {
-            Log::error("Sensor Error: " . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Internal Server Error'], 500);
+           
+            if ($severity) {
+                Alert::create([
+                    'area_id'     => $sensorEntry->area_id,
+                    'type'        => $alertType,
+                    'location'    => $sensorEntry->area->name,
+                    'severity'    => $severity,
+                    'message'     => $message,
+                    'status'      => 'active',
+                    'detected_at' => now(),
+                ]);
+            }
         }
+
+        return response()->json(['status' => 'success', 'message' => 'Processed'], 201);
+
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
     }
+}
 
     /**
      * Compare data against thresholds
