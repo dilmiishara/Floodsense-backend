@@ -45,6 +45,11 @@ Route::middleware(['auth:sanctum', 'role:2'])->group(function () {
     });
 });
 
+//update user profile
+Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
+});
+
 
 
 Route::get('/test', function () {
@@ -86,12 +91,11 @@ Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
 
 Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
+
 // Settings routes
 use App\Http\Controllers\SettingsController;
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);
-
-
 
 
 Route::get('/reports', [ReportController::class, 'index']);
