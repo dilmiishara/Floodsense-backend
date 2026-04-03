@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Api\ReportController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -89,3 +90,10 @@ Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
 use App\Http\Controllers\SettingsController;
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);
+
+
+
+
+Route::get('/reports', [ReportController::class, 'index']);
+Route::post('/reports/generate', [ReportController::class, 'store']);
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
