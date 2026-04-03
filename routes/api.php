@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\Api\ReportController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -85,3 +86,9 @@ Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
 
 Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
+
+
+
+Route::get('/reports', [ReportController::class, 'index']);
+Route::post('/reports/generate', [ReportController::class, 'store']);
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
