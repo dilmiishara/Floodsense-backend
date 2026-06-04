@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\SensorNodeController;
 use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\SafeLocationController;
@@ -9,8 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\Api\AlertThresholdController;
-
-
+use App\Http\Controllers\GatewayController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -96,3 +96,34 @@ Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
 use App\Http\Controllers\SettingsController;
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);
+
+// ── Gateway CRUD ──────────────────────────────────────────────────────────────
+Route::prefix('gateways')->group(function () {
+
+    Route::get('/',           [GatewayController::class, 'index']);    // GET    /api/gateways
+    Route::post('/',          [GatewayController::class, 'store']);    // POST   /api/gateways
+    Route::get('/{id}',       [GatewayController::class, 'show']);     // GET    /api/gateways/{id}
+    Route::put('/{id}',       [GatewayController::class, 'update']);   // PUT    /api/gateways/{id}
+    Route::delete('/{id}',    [GatewayController::class, 'destroy']);  // DELETE /api/gateways/{id}  → sets inactive
+
+    // Extra actions
+    Route::patch('/{id}/activate', [GatewayController::class, 'activate']); // PATCH /api/gateways/{id}/activate
+    Route::patch('/{id}/ping',     [GatewayController::class, 'ping']);      // PATCH /api/gateways/{id}/ping
+});
+
+
+// ── Sensor Node CRUD ──────────────────────────────────────────────────────────
+Route::prefix('sensor-nodes')->group(function () {
+
+    Route::get('/', [SensorNodeController::class, 'index']);   // GET    /api/sensor-nodes
+    Route::post('/', [SensorNodeController::class, 'store']);   // POST   /api/sensor-nodes
+    Route::get('/{id}', [SensorNodeController::class, 'show']);  // GET    /api/sensor-nodes/{id}
+    Route::put('/{id}', [SensorNodeController::class, 'update']);// PUT    /api/sensor-nodes/{id}
+    Route::delete('/{id}', [SensorNodeController::class, 'destroy']); // DELETE /api/sensor-nodes/{id} → inactive
+
+    // Extra status actions
+    Route::patch('/{id}/activate', [SensorNodeController::class, 'activate']);    // PATCH /api/sensor-nodes/{id}/activate
+    Route::patch('/{id}/maintenance', [SensorNodeController::class, 'maintenance']); // PATCH /api/sensor-nodes/{id}/maintenance
+    Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
+});
+
