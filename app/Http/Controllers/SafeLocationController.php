@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\SafeLocation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class SafeLocationController extends Controller

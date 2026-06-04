@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\SensorNodeController;
-use App\Http\Controllers\Api\AuthController;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Api\SafeLocationController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AlertController;
-use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\Api\AlertThresholdController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SensorDataController;
 use App\Http\Controllers\GatewayController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\SafeLocationController;
+use App\Http\Controllers\SensorNodeController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -83,7 +84,7 @@ Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
 Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
 // Manage Safe locations
-Route::prefix('safelocations')->group(function () {
+Route::prefix('safe-locations')->group(function () {
     Route::get('/', [SafeLocationController::class, 'index']);       // Get all
     Route::post('/', [SafeLocationController::class, 'store']);      // Add new
     Route::get('/{id}', [SafeLocationController::class, 'show']);    // Get single
@@ -93,7 +94,6 @@ Route::prefix('safelocations')->group(function () {
 
 Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
 // Settings routes
-use App\Http\Controllers\SettingsController;
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);
 
