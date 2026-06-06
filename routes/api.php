@@ -49,6 +49,11 @@ Route::middleware(['auth:sanctum', 'role:2'])->group(function () {
     });
 });
 
+//update user profile
+Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
+});
+
 
 
 Route::get('/test', function () {
@@ -93,6 +98,7 @@ Route::prefix('safe-locations')->group(function () {
 });
 
 Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
+
 // Settings routes
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);

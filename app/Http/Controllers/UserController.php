@@ -208,6 +208,37 @@ public function destroy($id)
     
     return response()->json($officers);
 }
+
+
+public function updateProfile(Request $request)
+{
+    $user = auth()->user(); 
+
+    $request->validate([
+        'first_name' => 'required|string|max:100',
+        'last_name'  => 'required|string|max:100',
+        'email'      => 'required|email|unique:users,email,' . $user->id, 
+        'telephone'  => 'required|string|max:15|unique:users,telephone,' . $user->id,
+        'password'   => 'nullable|min:6', 
+    ]);
+
+   
+    $user->first_name = $request->first_name;
+    $user->last_name = $request->last_name;
+    $user->email = $request->email;
+    $user->telephone = $request->telephone;
+
+    if ($request->filled('password')) {
+        $user->password = bcrypt($request->password);
+    }
+
+    $user->save();
+
+    return response()->json([
+        'message' => 'Profile updated successfully!',
+        'user' => $user
+    ], 200);
+}
 }
 
 
