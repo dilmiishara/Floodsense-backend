@@ -20,6 +20,7 @@ class SensorNode extends Model
         'lora_app_eui',
         'last_seen',
         'gateway_id',
+        'area_id'
     ];
 
     protected $casts = [
@@ -51,5 +52,10 @@ class SensorNode extends Model
     public function scopeMaintenance($query)
     {
         return $query->where('status', 'maintenance');
+    }
+
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'area_id');
     }
 }

@@ -6,22 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class SensorReading extends Model
 {
-
-public $timestamps = false;
+    public $timestamps = false; 
     
+    protected $table = 'sensor_readings'; 
+
     protected $fillable = [
-        'sensor_id', 
-        'area_id', 
+        'sensor_node_id',  
+        'gateway_id',      
         'water_level', 
         'rainfall', 
         'humidity', 
-        'battery_level',
-        'latitude',
-        'longitude'
+        'temperature'      
     ];
 
-    public function area()
+    
+    public function sensorNode()
     {
-        return $this->belongsTo(Area::class, 'area_id');
+        return $this->belongsTo(SensorNode::class, 'sensor_node_id');
     }
 }

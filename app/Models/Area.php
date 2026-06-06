@@ -19,7 +19,7 @@ class Area extends Model
 
     protected $fillable = ['name'];
 
-    // Relationship: One area has many users
+    
     public function users()
     {
         return $this->hasMany(User::class, 'area_id');
@@ -29,4 +29,9 @@ class Area extends Model
 {
     return $this->hasMany(Report::class);
 }
+
+public function sensorNodes()
+    {
+        return $this->hasMany(SensorNode::class, 'area_id');
+    }
 }
