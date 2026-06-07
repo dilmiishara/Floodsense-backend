@@ -9,21 +9,24 @@ class AlertController extends Controller
 {
    
     public function getActiveAlerts()
-    {
-        $alerts = Alert::where('status', 'active')
-                       ->orderBy('detected_at', 'desc')
-                       ->get();
-        return response()->json($alerts);
-    }
+{
+    
+    $alerts = Alert::with('area') 
+                   ->where('status', 'active')
+                   ->orderBy('detected_at', 'desc')
+                   ->get();
+    return response()->json($alerts);
+}
 
-   
-    public function getAlertHistory()
-    {
-        $history = Alert::where('status', 'resolved')
-                        ->orderBy('detected_at', 'desc')
-                        ->get();
-        return response()->json($history);
-    }
+public function getAlertHistory()
+{
+    
+    $history = Alert::with('area')
+                    ->where('status', 'resolved')
+                    ->orderBy('detected_at', 'desc')
+                    ->get();
+    return response()->json($history);
+}
 
    
     public function store(Request $request)

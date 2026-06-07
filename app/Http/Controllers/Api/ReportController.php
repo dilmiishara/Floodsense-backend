@@ -11,21 +11,18 @@ use App\Models\AlertThreshold;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 
 class ReportController extends Controller
 {
-    /**
-     * 1. කලින් සෑදූ වාර්තා Archive එක පෙන්වීමට
-     */
+    
     public function index()
     {
         $reports = Report::with('area')->orderBy('created_at', 'desc')->get();
         return response()->json($reports);
     }
 
-    /**
-     * 2. වාර්තාවක් සාදා (PDF/Excel) Database එකේ Store කිරීම
-     */
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -36,10 +33,13 @@ class ReportController extends Controller
             'to_date'       => 'required|date',
         ]);
 
-        // --- 1. දත්ත ලබා ගැනීම (Data Query) ---
+        
         $query = Alert::query();
 
-        if ($request->filled('area_id') && $request->area_id !== 'null' && $request->area_id !== '') {
+        // Standardize stringified 'null' evaluations sent via frontend forms
+        $hasAreaId = $request->filled('area_id') && $request->area_id !== 'null' && $request->area_id !== '';
+
+        if ($hasAreaId) {
             $query->where('area_id', $request->area_id);
         }
 
@@ -51,7 +51,15 @@ class ReportController extends Controller
                       ->orderBy('created_at', 'desc')
                       ->get();
 
-        $areaName = $request->area_id ? Area::find($request->area_id)->name : 'All Regions';
+        // FIX: Prevent fatal null property crashes by verifying record existence first
+        $areaName = 'All Regions';
+        if ($hasAreaId) {
+            $area = Area::find($request->area_id);
+            if ($area) {
+                $areaName = $area->name;
+            }
+        }
+
         $format = strtoupper($request->export_format);
         $generatedAt = now()->format('Y-m-d H:i:s');
         
@@ -59,7 +67,7 @@ class ReportController extends Controller
         $filePath = "";
         $output = "";
 
-        // --- 2. තෝරාගත් Format එක අනුව ගොනුව සැකසීම ---
+       
         if ($format === 'PDF') {
             $filePath = "reports/" . $fileName . ".pdf";
             $pdfData = [
@@ -70,19 +78,27 @@ class ReportController extends Controller
                 'data'         => $data,
                 'generated_at' => $generatedAt
             ];
-            $pdf = Pdf::loadView('pdf.report', $pdfData);
-            $output = $pdf->output();
+
+            try {
+                $pdf = Pdf::loadView('pdf.report', $pdfData);
+                $output = $pdf->output();
+            } catch (Exception $e) {
+                return response()->json([
+                    'message' => 'Failed compiling PDF view template.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
         } 
         else if ($format === 'EXCEL' || $format === 'CSV') {
-            // Excel/XLS සඳහා HTML Table ව්‍යුහය භාවිතා කිරීම (Professional Method)
+            
             $filePath = "reports/" . $fileName . ".xls";
             $output = '
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>
             <body>
                 <table border="1">
-                    <tr><th colspan="6" style="background-color: #eee; font-size: 16px;">' . $request->report_type . '</th></tr>
-                    <tr><th colspan="6">Region: ' . $areaName . ' | Period: ' . $request->from_date . ' to ' . $request->to_date . '</th></tr>
+                    <tr><th colspan="6" style="background-color: #eee; font-size: 16px;">' . e($request->report_type) . '</th></tr>
+                    <tr><th colspan="6">Region: ' . e($areaName) . ' | Period: ' . e($request->from_date) . ' to ' . e($request->to_date) . '</th></tr>
                     <tr style="background-color: #1a1a1a; color: #ffffff; font-weight: bold;">
                         <th>Date/Time</th>
                         <th>Incident Type</th>
@@ -95,49 +111,62 @@ class ReportController extends Controller
             foreach ($data as $item) {
                 $output .= '
                     <tr>
-                        <td>' . $item->created_at . '</td>
-                        <td>' . $item->type . '</td>
-                        <td>' . ($item->area->name ?? "Global") . '</td>
-                        <td>' . strtoupper($item->severity) . '</td>
-                        <td>' . ($item->sensorReading->water_level ?? "0") . '</td>
-                        <td>' . ($item->sensorReading->rainfall ?? "0") . '</td>
+                        <td>' . e($item->created_at) . '</td>
+                        <td>' . e($item->type) . '</td>
+                        <td>' . e($item->area->name ?? "Global") . '</td>
+                        <td>' . e(strtoupper($item->severity)) . '</td>
+                        <td>' . e($item->sensorReading->water_level ?? "0") . '</td>
+                        <td>' . e($item->sensorReading->rainfall ?? "0") . '</td>
                     </tr>';
             }
             $output .= '</table></body></html>';
         }
 
-        // --- 3. Storage එකේ Save කිරීම ---
-        Storage::disk('public')->put($filePath, $output);
+        try {
+            // Check and build file structures cleanly prior to file placements
+            if (!Storage::disk('public')->exists('reports')) {
+                Storage::disk('public')->makeDirectory('reports');
+            }
 
-        // --- 4. Report Table එකේ Record එකක් දැමීම ---
-        $report = Report::create([
-            'name'      => $request->report_type . " - " . date('M d, Y'),
-            'type'      => $request->report_type,
-            'format'    => $format,
-            'area_id'   => ($request->area_id == 'null' || $request->area_id == '') ? null : $request->area_id,
-            'file_path' => $filePath, 
-            'file_size' => round(strlen($output) / 1024 / 1024, 2),
-        ]);
+            Storage::disk('public')->put($filePath, $output);
 
-        return response()->json([
-            'message' => 'Report generated successfully!',
-            'data'    => $report->load('area')
-        ], 201);
+            // Calculate sizing cleanly into Kilobytes (KB) to prevent fractional decimals breaking down
+            $rawLength = strlen($output);
+            $fileSizeKb = $rawLength > 0 ? round($rawLength / 1024, 2) : 0;
+
+            $report = Report::create([
+                'name'      => $request->report_type . " - " . date('M d, Y'),
+                'type'      => $request->report_type,
+                'format'    => $format,
+                'area_id'   => $hasAreaId ? $request->area_id : null,
+                'file_path' => $filePath, 
+                'file_size' => $fileSizeKb,
+            ]);
+
+            return response()->json([
+                'message' => 'Report generated successfully!',
+                'data'    => $report->load('area')
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed saving report file or database entity.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * 3. වාර්තාවක් මකා දැමීම (Delete)
-     */
+    
     public function destroy($id)
     {
         $report = Report::findOrFail($id);
 
-        // Storage එකේ ඇති ගොනුව (PDF/Excel) ඉවත් කිරීම
+        
         if (Storage::disk('public')->exists($report->file_path)) {
             Storage::disk('public')->delete($report->file_path);
         }
 
-        // Database record එක ඉවත් කිරීම
+       
         $report->delete();
 
         return response()->json(['message' => 'Report deleted successfully']);

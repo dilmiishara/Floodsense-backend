@@ -9,12 +9,19 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\SafeLocationController;
 use App\Http\Controllers\SensorNodeController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+
+
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -71,7 +78,10 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
 
-
+// Manage Reports
+Route::get('/reports', [ReportController::class, 'index']);      
+Route::post('/reports', [ReportController::class, 'store']);
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']); 
 
 //Manage Alerts
 Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
