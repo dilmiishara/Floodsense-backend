@@ -9,26 +9,51 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter; 
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     // 🔐 LOGIN
     public function login(Request $request)
     {
-        // Validate
+        
         $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        // Check credentials
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $throttleKey = Str::lower($request->input('email')) . '|' . $request->ip();
+
+        
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $minutes = ceil($seconds / 60); 
+
             return response()->json([
-                'message' => 'Invalid credentials'
+                'status' => 'locked',
+                'message' => "Too many login attempts. Your administrative account has been locked for temporary security reasons. Please try again after {$minutes} minutes."
+            ], 429); 
+        }
+
+        
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            
+            
+            RateLimiter::hit($throttleKey, 900); 
+
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Invalid credentials. Please verify your administrative security keys.'
             ], 401);
         }
 
+        
         $user = Auth::user();
+
+        
+        RateLimiter::clear($throttleKey);
 
         // Create token
         $token = $user->createToken('auth-token')->plainTextToken;
