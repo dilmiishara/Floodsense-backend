@@ -215,28 +215,50 @@ public function updateProfile(Request $request)
     $user = auth()->user(); 
 
     $request->validate([
-        'first_name' => 'required|string|max:100',
-        'last_name'  => 'required|string|max:100',
-        'email'      => 'required|email|unique:users,email,' . $user->id, 
-        'telephone'  => 'required|string|max:15|unique:users,telephone,' . $user->id,
-        'password'   => 'nullable|min:6', 
+        'first_name'       => 'required|string|max:100',
+        'last_name'        => 'required|string|max:100',
+        'email'            => 'required|email|unique:users,email,' . $user->id, 
+        'telephone'        => 'required|string|max:15|unique:users,telephone,' . $user->id,
+        'current_password' => 'nullable|string', 
+        'password'         => 'nullable|string|min:6|confirmed', 
+    ], [
+        'password.min'       => 'The new password must be at least 6 characters long.',
+        'password.confirmed' => 'The new password confirmation does not match.',
     ]);
 
-   
-    $user->first_name = $request->first_name;
-    $user->last_name = $request->last_name;
-    $user->email = $request->email;
-    $user->telephone = $request->telephone;
-
+    
     if ($request->filled('password')) {
+        
+        if (!$request->filled('current_password')) {
+            return response()->json([
+                'status'  => 'failed',
+                'message' => 'Security Error: You must enter your current password to set a new one.'
+            ], 422);
+        }
+
+        
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status'  => 'failed',
+                'message' => 'Security Error: The current password you entered is incorrect.'
+            ], 422);
+        }
+
+        
         $user->password = bcrypt($request->password);
     }
 
+    
+    $user->first_name = $request->first_name;
+    $user->last_name  = $request->last_name;
+    $user->email      = $request->email;
+    $user->telephone  = $request->telephone;
     $user->save();
 
     return response()->json([
-        'message' => 'Profile updated successfully!',
-        'user' => $user
+        'status'  => 'success',
+        'message' => 'Profile and security settings updated successfully!',
+        'user'    => $user
     ], 200);
 }
 }
