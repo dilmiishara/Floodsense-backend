@@ -118,7 +118,7 @@
                     <td>
                         @if($item->threshold)
                             @if(str_contains(strtolower($item->type), 'rain'))
-                                {{-- Rainfall Alert එකක් නම් Rain Thresholds පෙන්වන්න --}}
+                                
                                 <span class="limit-label">Rain Warning:</span>
                                 <span class="limit-val">{{ $item->threshold->rain_warning_level }}<span class="val-unit">mm</span></span>
                                 <span class="limit-label" style="margin-top: 4px;">Rain Critical:</span>

@@ -11,7 +11,6 @@ class Area extends Model
 {
     use HasFactory;
 
-    // Supabase table name
     protected $table = 'areas';
 
     

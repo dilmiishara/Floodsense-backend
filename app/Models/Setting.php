@@ -10,9 +10,8 @@ class Setting extends Model
 {
     protected $table      = 'settings';
     protected $fillable   = ['section', 'key_name', 'value'];
-    public    $timestamps = false;  // we handle updated_at in Supabase
+    public    $timestamps = false; 
 
-    // Helper: get all settings for a section as key=>value array
     public static function getSection(string $section): array
     {
         return static::where('section', $section)
