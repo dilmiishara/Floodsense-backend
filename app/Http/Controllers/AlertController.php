@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Alert;
 use Illuminate\Http\Request;
+use App\Services\FCMNotificationService;
 
 class AlertController extends Controller
 {
-   
+
     public function getActiveAlerts()
     {
         $alerts = Alert::where('status', 'active')
@@ -16,7 +17,7 @@ class AlertController extends Controller
         return response()->json($alerts);
     }
 
-   
+
     public function getAlertHistory()
     {
         $history = Alert::where('status', 'resolved')
@@ -25,7 +26,7 @@ class AlertController extends Controller
         return response()->json($history);
     }
 
-   
+
     public function store(Request $request)
     {
         $request->validate([
@@ -55,7 +56,7 @@ class AlertController extends Controller
         return response()->json(['message' => 'Alert not found'], 404);
     }
 
-    
+
     $alert->update([
         'status' => 'resolved'
     ]);
@@ -65,6 +66,39 @@ class AlertController extends Controller
         'message' => 'Alert resolved and moved to history.'
     ]);
 }
+
+// Add this as a separate method in AlertController class
+    public function sendAlertNotification(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string',
+            'message' => 'required|string',
+            'type' => 'nullable|string',
+            'severity' => 'nullable|string',
+        ]);
+
+        try {
+            $fcmService = new FCMNotificationService();
+            $fcmService->sendToAll(
+                title: '⚠️ ' . $request->title,
+                body: $request->message,
+                data: [
+                    'type' => $request->type ?? 'Alert',
+                    'severity' => $request->severity ?? 'HIGH',
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Notification sent successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to send notification',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 }

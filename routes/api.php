@@ -12,6 +12,8 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FCMTokenController;
+use App\Http\Controllers\MobileAuthController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -80,7 +82,7 @@ Route::post('/sensor-data', [SensorDataController::class, 'store']);
 // Get all thresholds for the table
 Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
 
-// Update or Create a threshold
+// Update or Create a thresholdphp
 Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
 // Manage Safe locations
@@ -127,3 +129,23 @@ Route::prefix('sensor-nodes')->group(function () {
     Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
 });
 
+// FCM Token Management Routes
+Route::post('/fcm/save-token', [FCMTokenController::class, 'saveToken']);
+Route::post('/fcm/delete-token', [FCMTokenController::class, 'deleteToken']);
+
+// Send an alert notification to users (e.g., push notification or in-app alert)
+Route::post('/alerts/send-notification', [AlertController::class, 'sendAlertNotification']);
+
+// Public routes
+Route::post('/mobile/register', [MobileAuthController::class, 'register']);
+Route::post('/mobile/login', [MobileAuthController::class, 'login']);
+Route::post('/mobile/forgot-password', [MobileAuthController::class, 'forgotPassword']);
+Route::post('/mobile/verify-otp', [MobileAuthController::class, 'verifyOtp']);
+Route::post('/mobile/reset-password', [MobileAuthController::class, 'resetPassword']);
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/mobile/logout', [MobileAuthController::class, 'logout']);
+    Route::get('/mobile/profile', [MobileAuthController::class, 'profile']);
+    Route::put('/mobile/profile/update', [MobileAuthController::class, 'updateProfile']);
+});
