@@ -11,7 +11,6 @@ class Area extends Model
 {
     use HasFactory;
 
-    // Supabase table name
     protected $table = 'areas';
 
     
@@ -19,9 +18,19 @@ class Area extends Model
 
     protected $fillable = ['name'];
 
-    // Relationship: One area has many users
+    
     public function users()
     {
         return $this->hasMany(User::class, 'area_id');
+    }
+
+    public function reports()
+{
+    return $this->hasMany(Report::class);
+}
+
+public function sensorNodes()
+    {
+        return $this->hasMany(SensorNode::class, 'area_id');
     }
 }

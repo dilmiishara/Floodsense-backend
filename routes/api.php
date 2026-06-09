@@ -9,7 +9,9 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\SafeLocationController;
 use App\Http\Controllers\SensorNodeController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FCMTokenController;
@@ -17,6 +19,12 @@ use App\Http\Controllers\MobileAuthController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [AuthController::class, 'resetPasswordWithOtp']);
+
+
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -51,6 +59,11 @@ Route::middleware(['auth:sanctum', 'role:2'])->group(function () {
     });
 });
 
+//update user profile
+Route::middleware('auth:sanctum')->group(function () {
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
+});
+
 
 
 Route::get('/test', function () {
@@ -68,13 +81,20 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
 
-
+// Manage Reports
+Route::get('/reports', [ReportController::class, 'index']);      
+Route::post('/reports', [ReportController::class, 'store']);
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']); 
 
 //Manage Alerts
 Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
 Route::get('/alerts/history', [AlertController::class, 'getAlertHistory']);
 Route::post('/alerts/generate', [AlertController::class, 'store']);
 Route::put('/alerts/{id}/resolve', [AlertController::class, 'resolve']);
+
+
+//manage Dashboard
+Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMasterDashboardData']);
 
 // This allows Postman to "talk" to your controller
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
@@ -95,6 +115,7 @@ Route::prefix('safe-locations')->group(function () {
 });
 
 Route::get('/field-officers', [UserController::class, 'getFieldOfficers']);
+
 // Settings routes
 Route::get('/settings/{section}',  [SettingsController::class, 'show']);
 Route::post('/settings/{section}', [SettingsController::class, 'update']);
