@@ -9,7 +9,7 @@ class SafeLocation extends Model
 {
     use HasFactory;
 
-    protected $table = 'safe_locations'; // table name in lowercase
+    protected $table = 'safe_locations'; 
 
     protected $fillable = [
         'location_name',

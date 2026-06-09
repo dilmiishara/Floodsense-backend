@@ -10,7 +10,7 @@ class Alert extends Model
     use HasFactory;
 
     protected $fillable = [
-    'type', 'location', 'severity', 'message', 'status', 'detected_at', 'area_id' 
+    'type',  'severity', 'message', 'status', 'detected_at', 'area_id' 
 ];
 
     public function area()
