@@ -3,150 +3,315 @@
 <head>
     <title>FloodSense - Professional Analytical Report</title>
     <style>
-        body { font-family: 'Helvetica', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
-        .container { padding: 30px; }
-        
-        /* Header Section */
-        .header { text-align: center; border-bottom: 3px solid #1a1a1a; padding-bottom: 15px; margin-bottom: 20px; }
-        .header h2 { margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; font-size: 22px; }
-        .header p { margin: 5px 0 0; font-size: 14px; font-weight: bold; color: #555; }
-        
-        /* Meta/Summary Info */
-        .report-info { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
-        .report-info td { font-size: 12px; vertical-align: top; padding: 4px 0; }
-        .info-label { font-weight: bold; color: #1a1a1a; width: 120px; }
-        
-        /* Summary Box */
-        .summary-box { 
-            background: #f8f9fa; 
-            border-left: 5px solid #1a1a1a;
-            padding: 12px; 
-            margin-bottom: 25px; 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; color: #1a1a1a; font-size: 11px; }
+
+        .page { padding: 40px 45px 80px; }
+
+        /* ── Top Blue Bar ── */
+        .top-bar {
+            background: #1a52cc;
+            color: white;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .summary-box span { font-size: 11px; color: #444; line-height: 1.4; }
-        
-        /* Table Styling */
-        .table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .table th { 
-            background-color: #1a1a1a; 
-            color: white; 
-            padding: 12px 8px; 
-            text-align: left; 
-            font-size: 10px; 
-            text-transform: uppercase; 
+        .top-bar-left { font-size: 13px; font-weight: bold; letter-spacing: 0.5px; }
+        .top-bar-right { font-size: 10px; opacity: 0.85; text-align: right; line-height: 1.6; }
+
+        /* ── Title Block ── */
+        .title-block {
+            border: 1px solid #1a52cc;
+            border-top: none;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            background: #f8faff;
         }
-        .table td { 
-            padding: 12px 8px; 
-            border-bottom: 1px solid #eee; 
-            font-size: 11px; 
+        .title-block h1 {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .title-block p {
+            font-size: 10px;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        /* ── Info Table ── */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #c5d2ee;
+        }
+        .info-table td {
+            padding: 7px 12px;
+            font-size: 10px;
+            border: 1px solid #c5d2ee;
+            vertical-align: top;
+        }
+        .info-label {
+            background: #eef3ff;
+            font-weight: bold;
+            color: #1a52cc;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.3px;
+            width: 100px;
+        }
+        .info-value {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        /* ── Note / Summary Box ── */
+        .note-box {
+            border: 1px solid #c5d2ee;
+            border-left: 4px solid #1a52cc;
+            padding: 9px 12px;
+            margin-bottom: 20px;
+            background: #f8faff;
+            font-size: 9.5px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        /* ── Section Title ── */
+        .section-title {
+            background: #1a52cc;
+            color: white;
+            padding: 7px 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0;
+        }
+
+        /* ── Main Data Table ── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #c5d2ee;
+        }
+        .data-table thead tr {
+            background: #eef3ff;
+        }
+        .data-table th {
+            padding: 8px 8px;
+            font-size: 8.5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #1a52cc;
+            border: 1px solid #c5d2ee;
+            text-align: left;
+        }
+        .data-table td {
+            padding: 8px 8px;
+            font-size: 10px;
+            border: 1px solid #dde4f5;
             vertical-align: middle;
         }
-        
-        /* Severity Badges */
-        .badge { padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 10px; color: white; display: inline-block; text-align: center; width: 70px; }
-        .critical { background-color: #d32f2f; }
-        .warning { background-color: #f57c00; }
-        .info { background-color: #1976d2; }
-        
-        /* Value Styling */
-        .val-unit { font-size: 10px; color: #777; font-weight: normal; }
-        .sensor-val { font-weight: bold; color: #2e7d32; display: block; margin-bottom: 2px; }
-        .limit-label { font-size: 9px; color: #888; text-transform: uppercase; display: block; }
-        .limit-val { font-weight: bold; color: #c62828; }
-
-        .footer { 
-            position: fixed; 
-            bottom: 20px; 
-            width: 100%; 
-            text-align: center; 
-            font-size: 9px; 
-            color: #999; 
-            border-top: 1px solid #eee;
-            padding-top: 10px;
+        .data-table tbody tr:nth-child(even) {
+            background: #f8faff;
         }
+        .data-table tbody tr:last-child td {
+            border-bottom: 2px solid #1a52cc;
+        }
+
+        /* ── Sensor Values ── */
+        .sensor-val {
+            font-weight: bold;
+            color: #1a52cc;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .val-unit { font-size: 9px; color: #888; font-weight: normal; font-family: Arial, sans-serif; }
+
+        /* ── Threshold Labels ── */
+        .limit-label {
+            font-size: 8.5px;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            letter-spacing: 0.3px;
+        }
+        .limit-val {
+            font-weight: bold;
+            color: #cc2200;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+        }
+
+        /* ── Severity Badges ── */
+        .badge {
+            padding: 3px 8px;
+            font-weight: bold;
+            font-size: 8.5px;
+            display: inline-block;
+            text-align: center;
+            min-width: 60px;
+            letter-spacing: 0.3px;
+            border-radius: 2px;
+        }
+        .critical { background: #fde8e8; color: #cc2200; border: 1px solid #cc2200; }
+        .warning  { background: #fff3e0; color: #e07800; border: 1px solid #e07800; }
+        .info     { background: #eef3ff; color: #1a52cc; border: 1px solid #1a52cc; }
+
+        /* ── Signature ── */
+        .sig-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+        }
+        .sig-table td {
+            padding: 0 10px;
+            width: 50%;
+            text-align: left;
+            vertical-align: bottom;
+        }
+        .sig-line {
+            border-top: 1px solid #333;
+            padding-top: 6px;
+            margin-top: 36px;
+            width: 180px;
+        }
+        .sig-name { font-size: 10px; font-weight: bold; color: #1a1a1a; }
+        .sig-role { font-size: 8.5px; color: #666; margin-top: 2px; }
+
+        /* ── Fixed Footer ── */
+        .footer {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            border-top: 2px solid #1a52cc;
+            padding: 5px 40px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            color: #666;
+            background: white;
+        }
+        .footer-center { color: #1a52cc; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>FloodSense Monitoring System</h2>
-            <p>{{ $title }}</p>
+
+    {{-- ── Top Blue Bar ── --}}
+    <div class="top-bar">
+        <div class="top-bar-left">
+            FLOODSENSE MONITORING SYSTEM
+        </div>
+        <div class="top-bar-right">
+            {{ $area_name }}<br>
+            Kalu Ganga Basin | Rathnapura District, Sri Lanka<br>
+            Disaster Management Centre — AI Prediction Unit
+        </div>
+        </div>
+    </div>
+
+    <div class="page">
+
+        {{-- ── Title Block ── --}}
+        <div class="title-block">
+            <h1>Flood Prediction Intelligence Report</h1>
+            <p>AI-Generated Analytical Report &mdash; Incident &amp; Sensor Analysis &mdash; {{ \Carbon\Carbon::now()->format('F d, Y') }}</p>
         </div>
 
-        <table class="report-info">
+        {{-- ── Report Info ── --}}
+        <table class="info-table">
             <tr>
-                <td class="info-label">Region:</td>
-                <td>{{ $area_name }}</td>
-                <td class="info-label">Report ID:</td>
-                <td style="text-align: right;">FS-{{ strtoupper(substr(md5(time()), 0, 8)) }}</td>
+                <td class="info-label">Report ID</td>
+                <td class="info-value">FS-{{ strtoupper(substr(md5(time()), 0, 8)) }}</td>
+                <td class="info-label">Generated At</td>
+                <td class="info-value">{{ $generated_at }}</td>
             </tr>
             <tr>
-                <td class="info-label">Period:</td>
-                <td>{{ $from_date }} to {{ $to_date }}</td>
-                <td class="info-label">Generated At:</td>
-                <td style="text-align: right;">{{ $generated_at }}</td>
+                <td class="info-label">Region</td>
+                <td class="info-value">{{ $area_name }}</td>
+                <td class="info-label">Period</td>
+                <td class="info-value">{{ $from_date }} &mdash; {{ $to_date }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Report Type</td>
+                <td class="info-value">Incident Analytical Report</td>
+                <td class="info-label">Total Records</td>
+                <td class="info-value" style="color:#1a52cc; font-weight:bold;">{{ count($data) }}</td>
             </tr>
         </table>
 
-        <div class="summary-box">
-            <span><strong>Analytical Note:</strong> This report displays the specific sensor readings recorded during each incident. Safety Limits are retrieved from the <i>Alert Thresholds</i> configuration for <strong>{{ $area_name }}</strong>, showing both Warning and Critical levels for the relevant environmental factor.</span>
+        {{-- ── Analytical Note Box ── --}}
+        <div class="note-box">
+            <strong>Analytical Note:</strong> This report displays the specific sensor readings recorded during each incident.
+            Safety Limits are retrieved from the <em>Alert Thresholds</em> configuration for <strong>{{ $area_name }}</strong>,
+            showing both Warning and Critical levels for the relevant environmental factor.
         </div>
 
-        <table class="table">
+        {{-- ── Data Table ── --}}
+        <div class="section-title">Incident Records &amp; Sensor Observations</div>
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th width="18%">Date/Time</th>
-                    <th width="18%">Incident</th>
-                    <th width="28%">Recorded Observations</th>
-                    <th width="21%">System Thresholds</th>
-                    <th width="15%" style="text-align: center;">Severity</th>
+                    <th style="width:16%;">Date / Time</th>
+                    <th style="width:16%;">Incident</th>
+                    
+                    <th style="width:22%;">System Thresholds</th>
+                    <th style="width:20%; text-align:center;">Severity</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($data as $item)
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($item->created_at)->format('M d, Y') }}<br><small style="color: #888;">{{ \Carbon\Carbon::parse($item->created_at)->format('H:i:s') }}</small></td>
-                    <td style="font-weight: bold;">{{ $item->type }}</td>
+                    <td>
+                        {{ \Carbon\Carbon::parse($item->created_at)->format('M d, Y') }}<br>
+                        <span style="color:#888; font-size:9px;">{{ \Carbon\Carbon::parse($item->created_at)->format('H:i:s') }}</span>
+                    </td>
+                    <td style="font-weight:bold;">{{ $item->type }}</td>
                     <td>
                         @if($item->sensorReading)
-                            <div class="sensor-val">Water: {{ $item->sensorReading->water_level }}<span class="val-unit">m</span></div>
-                            <div class="sensor-val">Rainfall: {{ $item->sensorReading->rainfall }}<span class="val-unit">mm</span></div>
+                            <span class="sensor-val">Water: {{ $item->sensorReading->water_level }}<span class="val-unit"> m</span></span>
+                            <span class="sensor-val">Rainfall: {{ $item->sensorReading->rainfall }}<span class="val-unit"> mm</span></span>
                         @else
-                            <span style="color: #bbb; font-style: italic;">No Sensor Records</span>
+                            <span style="color:#bbb; font-style:italic;">No Sensor Records</span>
                         @endif
                     </td>
                     <td>
                         @if($item->threshold)
                             @if(str_contains(strtolower($item->type), 'rain'))
-                                
                                 <span class="limit-label">Rain Warning:</span>
-                                <span class="limit-val">{{ $item->threshold->rain_warning_level }}<span class="val-unit">mm</span></span>
-                                <span class="limit-label" style="margin-top: 4px;">Rain Critical:</span>
-                                <span class="limit-val">{{ $item->threshold->rain_critical_level }}<span class="val-unit">mm</span></span>
+                                <span class="limit-val">{{ $item->threshold->rain_warning_level }}<span class="val-unit"> mm</span></span>
+                                <span class="limit-label" style="margin-top:4px;">Rain Critical:</span>
+                                <span class="limit-val">{{ $item->threshold->rain_critical_level }}<span class="val-unit"> mm</span></span>
                             @else
-                                {{-- Flood/Water Alert එකක් නම් Water Thresholds පෙන්වන්න --}}
                                 <span class="limit-label">Water Warning:</span>
-                                <span class="limit-val">{{ $item->threshold->water_warning_level }}<span class="val-unit">m</span></span>
-                                <span class="limit-label" style="margin-top: 4px;">Water Critical:</span>
-                                <span class="limit-val">{{ $item->threshold->water_critical_level }}<span class="val-unit">m</span></span>
+                                <span class="limit-val">{{ $item->threshold->water_warning_level }}<span class="val-unit"> m</span></span>
+                                <span class="limit-label" style="margin-top:4px;">Water Critical:</span>
+                                <span class="limit-val">{{ $item->threshold->water_critical_level }}<span class="val-unit"> m</span></span>
                             @endif
                         @else
-                            <span style="color: #bbb;">N/A</span>
+                            <span style="color:#bbb;">N/A</span>
                         @endif
                     </td>
-                    <td style="text-align: center;">
+                    <td style="text-align:center;">
                         @php
-                            $sev = strtoupper($item->severity ?? 'INFO');
-                            $class = $sev == 'CRITICAL' ? 'critical' : (in_array($sev, ['HIGH', 'WARNING']) ? 'warning' : 'info');
+                            $sev   = strtoupper($item->severity ?? 'INFO');
+                            $class = $sev === 'CRITICAL' ? 'critical' : (in_array($sev, ['HIGH', 'WARNING']) ? 'warning' : 'info');
                         @endphp
                         <span class="badge {{ $class }}">{{ $sev }}</span>
                     </td>
                 </tr>
                 @endforeach
-                
+
                 @if(count($data) == 0)
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 40px; color: #999; font-style: italic;">
+                    <td colspan="5" style="text-align:center; padding:30px; color:#999; font-style:italic;">
                         No incidents were recorded within the specified parameters.
                     </td>
                 </tr>
@@ -154,27 +319,32 @@
             </tbody>
         </table>
 
-        <div style="margin-top: 60px; font-size: 11px;">
-            <table width="100%">
-                <tr>
-                    <td width="50%">
-                        <div style="border-top: 1px solid #333; width: 180px; padding-top: 5px;">
-                            <strong>Technical Lead</strong>
-                        </div>
-                        <span style="font-size: 9px; color: #666;">FloodSense AI Monitoring Unit</span>
-                    </td>
-                    <td width="50%" style="text-align: right;">
-                        <div style="border-top: 1px solid #333; width: 180px; padding-top: 5px; float: right;">
-                            <strong>System Verified Date</strong>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        {{-- ── Signatures ── --}}
+        <table class="sig-table">
+            <tr>
+                <td>
+                    <div class="sig-line">
+                        <div class="sig-name">Technical Lead</div>
+                        <div class="sig-role">FloodSense AI Monitoring Unit</div>
+                    </div>
+                </td>
+                <td style="text-align:right;">
+                    <div class="sig-line" style="float:right;">
+                        <div class="sig-name">{{ \Carbon\Carbon::now()->format('d F Y') }}</div>
+                        <div class="sig-role">System Verified Date</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
     </div>
 
+    {{-- ── Fixed Footer ── --}}
     <div class="footer">
-        FloodSense AI Dashboard | Confidential Analytical Report | {{ date('Y') }} &copy; Project FloodSense
+        <span>CONFIDENTIAL — For Authorized Personnel Only</span>
+        <span class="footer-center">FloodSense AI Dashboard &mdash; Rathnapura District Flood Monitoring</span>
+        <span>{{ date('Y') }} &copy; Faculty of Technology, University of Colombo</span>
     </div>
+
 </body>
 </html>

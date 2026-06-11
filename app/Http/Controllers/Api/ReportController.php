@@ -15,25 +15,25 @@ use Exception;
 
 class ReportController extends Controller
 {
-    
+
     public function index()
     {
         $reports = Report::with('area')->orderBy('created_at', 'desc')->get();
         return response()->json($reports);
     }
 
-    
+
     public function store(Request $request)
     {
         $request->validate([
             'report_type'   => 'required|string',
             'export_format' => 'required|string',
-            'area_id'       => 'nullable', 
+            'area_id'       => 'nullable',
             'from_date'     => 'required|date',
             'to_date'       => 'required|date',
         ]);
 
-        
+
         $query = Alert::query();
 
         // Standardize stringified 'null' evaluations sent via frontend forms
@@ -45,7 +45,7 @@ class ReportController extends Controller
 
         $data = $query->with(['area', 'threshold', 'sensorReading'])
                       ->whereBetween('created_at', [
-                          $request->from_date . " 00:00:00", 
+                          $request->from_date . " 00:00:00",
                           $request->to_date . " 23:59:59"
                       ])
                       ->orderBy('created_at', 'desc')
@@ -62,12 +62,12 @@ class ReportController extends Controller
 
         $format = strtoupper($request->export_format);
         $generatedAt = now()->format('Y-m-d H:i:s');
-        
+
         $fileName = "Report_" . time();
         $filePath = "";
         $output = "";
 
-       
+
         if ($format === 'PDF') {
             $filePath = "reports/" . $fileName . ".pdf";
             $pdfData = [
@@ -88,9 +88,9 @@ class ReportController extends Controller
                     'error' => $e->getMessage()
                 ], 500);
             }
-        } 
+        }
         else if ($format === 'EXCEL' || $format === 'CSV') {
-            
+
             $filePath = "reports/" . $fileName . ".xls";
             $output = '
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -139,7 +139,7 @@ class ReportController extends Controller
                 'type'      => $request->report_type,
                 'format'    => $format,
                 'area_id'   => $hasAreaId ? $request->area_id : null,
-                'file_path' => $filePath, 
+                'file_path' => $filePath,
                 'file_size' => $fileSizeKb,
             ]);
 
@@ -156,17 +156,17 @@ class ReportController extends Controller
         }
     }
 
-    
+
     public function destroy($id)
     {
         $report = Report::findOrFail($id);
 
-        
+
         if (Storage::disk('public')->exists($report->file_path)) {
             Storage::disk('public')->delete($report->file_path);
         }
 
-       
+
         $report->delete();
 
         return response()->json(['message' => 'Report deleted successfully']);
