@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FCMTokenController;
 use App\Http\Controllers\MobileAuthController;
+use App\Http\Controllers\PredictionController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -82,9 +83,9 @@ Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
 
 // Manage Reports
-Route::get('/reports', [ReportController::class, 'index']);      
+Route::get('/reports', [ReportController::class, 'index']);
 Route::post('/reports', [ReportController::class, 'store']);
-Route::delete('/reports/{id}', [ReportController::class, 'destroy']); 
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
 
 //Manage Alerts
 Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
@@ -170,3 +171,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mobile/profile', [MobileAuthController::class, 'profile']);
     Route::put('/mobile/profile/update', [MobileAuthController::class, 'updateProfile']);
 });
+
+
+//get latest updated 3 rows from the prediction table.
+Route::get('/predictions/latest', [PredictionController::class, 'latest']);
