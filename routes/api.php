@@ -12,6 +12,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PredictionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -89,6 +90,11 @@ Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
 Route::get('/alerts/history', [AlertController::class, 'getAlertHistory']);
 Route::post('/alerts/generate', [AlertController::class, 'store']);
 Route::put('/alerts/{id}/resolve', [AlertController::class, 'resolve']);
+
+
+// Predictions
+Route::get('/predictions', [PredictionController::class, 'index']);
+Route::get('/predictions/alerts', [PredictionController::class, 'getAlertPredictions']); 
 
 
 //manage Dashboard
