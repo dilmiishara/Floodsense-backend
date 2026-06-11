@@ -148,3 +148,8 @@ Route::prefix('sensor-nodes')->group(function () {
     Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
 });
 
+use App\Http\Controllers\FloodChartController;
+
+Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
+Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
+
