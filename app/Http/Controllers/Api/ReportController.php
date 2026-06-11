@@ -11,6 +11,7 @@ use App\Models\AlertThreshold;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Prediction;
 use Exception;
 
 class ReportController extends Controller
@@ -26,39 +27,70 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'report_type'   => 'required|string',
-            'export_format' => 'required|string',
-            'area_id'       => 'nullable', 
-            'from_date'     => 'required|date',
-            'to_date'       => 'required|date',
-        ]);
-
+    'report_type'   => 'required|string',
+    'export_format' => 'required|string',
+    'area_id'       => 'nullable',
+    'from_date'     => 'nullable|date',
+    'to_date'       => 'nullable|date',
+]);
         
         $query = Alert::query();
 
-        // Standardize stringified 'null' evaluations sent via frontend forms
-        $hasAreaId = $request->filled('area_id') && $request->area_id !== 'null' && $request->area_id !== '';
+        $isPredictionReport = $request->report_type === 'Flood Prediction Analysis';
+$hasAreaId = $request->filled('area_id') && $request->area_id !== 'null' && $request->area_id !== '';
 
-        if ($hasAreaId) {
-            $query->where('area_id', $request->area_id);
+// ── Prediction Report ─────────────────────────────────────────────────────────
+if ($isPredictionReport) {
+
+    $query = Prediction::query();
+
+    // Filter by station name if area selected
+    if ($hasAreaId) {
+        $area = Area::find($request->area_id);
+        if ($area) {
+            $query->where('station_name', 'like', '%' . $area->name . '%');
         }
+    }
 
-        $data = $query->with(['area', 'threshold', 'sensorReading'])
-                      ->whereBetween('created_at', [
-                          $request->from_date . " 00:00:00", 
-                          $request->to_date . " 23:59:59"
-                      ])
-                      ->orderBy('created_at', 'desc')
-                      ->get();
+    // Filter by date range if provided
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+    $query->whereBetween('created_at', [
+        $request->from_date . ' 00:00:00',
+        $request->to_date   . ' 23:59:59',
+    ]);
+}
+    // ✅ Only include Alert, Minor, Major — exclude Normal records
+$data = $query
+    ->whereIn('flood_risk_level', ['Alert', 'Minor', 'Major'])
+    ->orderBy('forecast_time', 'desc')
+    ->get();
+    $areaName = $hasAreaId ? (Area::find($request->area_id)?->name ?? 'All Stations') : 'All Stations';
 
-        // FIX: Prevent fatal null property crashes by verifying record existence first
-        $areaName = 'All Regions';
-        if ($hasAreaId) {
-            $area = Area::find($request->area_id);
-            if ($area) {
-                $areaName = $area->name;
-            }
+// ── Alert History Report ──────────────────────────────────────────────────────
+} else {
+
+    $query = Alert::query();
+
+    if ($hasAreaId) {
+        $query->where('area_id', $request->area_id);
+    }
+
+    $data = $query->with(['area', 'threshold', 'sensorReading'])
+                  ->whereBetween('created_at', [
+                      $request->from_date . ' 00:00:00',
+                      $request->to_date   . ' 23:59:59',
+                  ])
+                  ->orderBy('created_at', 'desc')
+                  ->get();
+
+    $areaName = 'All Regions';
+    if ($hasAreaId) {
+        $area = Area::find($request->area_id);
+        if ($area) {
+            $areaName = $area->name;
         }
+    }
+}
 
         $format = strtoupper($request->export_format);
         $generatedAt = now()->format('Y-m-d H:i:s');
@@ -69,58 +101,99 @@ class ReportController extends Controller
 
        
         if ($format === 'PDF') {
-            $filePath = "reports/" . $fileName . ".pdf";
-            $pdfData = [
-                'title'        => $request->report_type,
-                'area_name'    => $areaName,
-                'from_date'    => $request->from_date,
-                'to_date'      => $request->to_date,
-                'data'         => $data,
-                'generated_at' => $generatedAt
-            ];
+    $filePath = "reports/" . $fileName . ".pdf";
+    $pdfData = [
+        'title'        => $request->report_type,
+        'area_name'    => $areaName,
+        'station_name' => $areaName,
+        'from_date'    => $request->from_date ?? 'All dates',
+        'to_date'      => $request->to_date   ?? 'All dates',
+        'data'         => $data,
+        'generated_at' => $generatedAt,
+    ];
 
-            try {
-                $pdf = Pdf::loadView('pdf.report', $pdfData);
-                $output = $pdf->output();
-            } catch (Exception $e) {
-                return response()->json([
-                    'message' => 'Failed compiling PDF view template.',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-        } 
+    try {
+        // ✅ Use different blade template for prediction reports
+        $view = $isPredictionReport ? 'pdf.prediction_report' : 'pdf.report';
+        $pdf  = Pdf::loadView($view, $pdfData);
+        $output = $pdf->output();
+    } catch (Exception $e) {
+        return response()->json([
+            'message' => 'Failed compiling PDF view template.',
+            'error'   => $e->getMessage()
+        ], 500);
+    }
+}
         else if ($format === 'EXCEL' || $format === 'CSV') {
-            
-            $filePath = "reports/" . $fileName . ".xls";
-            $output = '
-            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-            <head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>
-            <body>
-                <table border="1">
-                    <tr><th colspan="6" style="background-color: #eee; font-size: 16px;">' . e($request->report_type) . '</th></tr>
-                    <tr><th colspan="6">Region: ' . e($areaName) . ' | Period: ' . e($request->from_date) . ' to ' . e($request->to_date) . '</th></tr>
-                    <tr style="background-color: #1a1a1a; color: #ffffff; font-weight: bold;">
-                        <th>Date/Time</th>
-                        <th>Incident Type</th>
-                        <th>Region</th>
-                        <th>Severity</th>
-                        <th>Water Level (m)</th>
-                        <th>Rainfall (mm)</th>
-                    </tr>';
+    $filePath = "reports/" . $fileName . ".xls";
 
-            foreach ($data as $item) {
-                $output .= '
-                    <tr>
-                        <td>' . e($item->created_at) . '</td>
-                        <td>' . e($item->type) . '</td>
-                        <td>' . e($item->area->name ?? "Global") . '</td>
-                        <td>' . e(strtoupper($item->severity)) . '</td>
-                        <td>' . e($item->sensorReading->water_level ?? "0") . '</td>
-                        <td>' . e($item->sensorReading->rainfall ?? "0") . '</td>
-                    </tr>';
-            }
-            $output .= '</table></body></html>';
+    // ── Prediction Excel ──────────────────────────────────────────────────────
+    if ($isPredictionReport) {
+        $output = '
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>
+        <body>
+            <table border="1">
+                <tr><th colspan="8" style="background-color: #1a52cc; color: white; font-size: 16px;">' . e($request->report_type) . '</th></tr>
+                <tr><th colspan="8">Station: ' . e($areaName) . ' | Period: ' . e($request->from_date ?? 'All') . ' to ' . e($request->to_date ?? 'All') . '</th></tr>
+                <tr style="background-color: #1a52cc; color: #ffffff; font-weight: bold;">
+                    <th>Forecast Time</th>
+                    <th>Station</th>
+                    <th>Water Level (m)</th>
+                    <th>Risk Level</th>
+                    <th>Affected Area (km²)</th>
+                    <th>Rainfall (mm)</th>
+                    <th>Temperature (°C)</th>
+                    <th>Humidity (%)</th>
+                </tr>';
+
+        foreach ($data as $item) {
+            $output .= '
+                <tr>
+                    <td>' . e($item->forecast_time) . '</td>
+                    <td>' . e($item->station_name) . '</td>
+                    <td>' . e(number_format($item->predicted_water_level, 3)) . '</td>
+                    <td>' . e(strtoupper($item->flood_risk_level ?? 'NORMAL')) . '</td>
+                    <td>' . e($item->affected_area_sqkm ?? '0') . '</td>
+                    <td>' . e($item->rainfall ?? '0') . '</td>
+                    <td>' . e($item->temperature ?? '0') . '</td>
+                    <td>' . e($item->humidity ?? '0') . '</td>
+                </tr>';
         }
+        $output .= '</table></body></html>';
+
+    // ── Alert History Excel ───────────────────────────────────────────────────
+    } else {
+        $output = '
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head>
+        <body>
+            <table border="1">
+                <tr><th colspan="6" style="background-color: #eee; font-size: 16px;">' . e($request->report_type) . '</th></tr>
+                <tr><th colspan="6">Region: ' . e($areaName) . ' | Period: ' . e($request->from_date) . ' to ' . e($request->to_date) . '</th></tr>
+                <tr style="background-color: #1a1a1a; color: #ffffff; font-weight: bold;">
+                    <th>Date/Time</th>
+                    <th>Incident Type</th>
+                    <th>Region</th>
+                    <th>Severity</th>
+                    <th>Water Level (m)</th>
+                    <th>Rainfall (mm)</th>
+                </tr>';
+
+        foreach ($data as $item) {
+            $output .= '
+                <tr>
+                    <td>' . e($item->created_at) . '</td>
+                    <td>' . e($item->type) . '</td>
+                    <td>' . e($item->area->name ?? "Global") . '</td>
+                    <td>' . e(strtoupper($item->severity)) . '</td>
+                    <td>' . e($item->sensorReading->water_level ?? "0") . '</td>
+                    <td>' . e($item->sensorReading->rainfall ?? "0") . '</td>
+                </tr>';
+        }
+        $output .= '</table></body></html>';
+    }
+}
 
         try {
             // Check and build file structures cleanly prior to file placements
