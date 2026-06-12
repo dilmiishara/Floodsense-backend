@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Prediction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PredictionController extends Controller
 {
@@ -34,10 +33,10 @@ class PredictionController extends Controller
     }
 
 
+    // Get latest prediction for each station
     public function latest()
     {
         try {
-            // Get latest prediction for each station
             $predictions = DB::table('predictions')
                 ->select(
                     'station_name',
@@ -76,7 +75,6 @@ class PredictionController extends Controller
             ], 500);
         }
     }
-
 
 
     // Active/Upcoming alerts — forecast_time is in the future

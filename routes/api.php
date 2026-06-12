@@ -12,13 +12,15 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PredictionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FCMTokenController;
 use App\Http\Controllers\MobileAuthController;
-use App\Http\Controllers\PredictionController;
 use App\Http\Controllers\WaterLevelController;
 use App\Http\Controllers\Api\SensorReadingController;
+use App\Http\Controllers\FloodChartController;
+
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -107,6 +109,9 @@ Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMaste
 // This allows Postman to "talk" to your controller
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
 
+// Get latest sensor reading for IoT card
+Route::get('/sensor-readings/latest', [SensorDataController::class, 'getLatest']);
+
 // Get all thresholds for the table
 Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
 
@@ -171,5 +176,6 @@ Route::get('/water-levels/latest', [WaterLevelController::class, 'latestPerStati
 // save realtime sensor data
 Route::post('/sensor-readings', [SensorReadingController::class, 'store']);
 
-
+Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
+Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
 
