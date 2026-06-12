@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FCMTokenController;
 use App\Http\Controllers\MobileAuthController;
 use App\Http\Controllers\PredictionController;
+use App\Http\Controllers\WaterLevelController;
+use App\Http\Controllers\Api\SensorReadingController;
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -155,4 +157,19 @@ Route::prefix('sensor-nodes')->group(function () {
     Route::patch('/{id}/maintenance', [SensorNodeController::class, 'maintenance']); // PATCH /api/sensor-nodes/{id}/maintenance
     Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
 });
+
+//get latest updated 3 rows from the prediction table.
+Route::get('/predictions/latest', [PredictionController::class, 'latest']);
+
+// alerts apis for mobile
+Route::get('/predictions/active-alerts', [PredictionController::class, 'activeAlertsMobile']);
+Route::get('/predictions/history-alerts', [PredictionController::class, 'historyAlertsMobile']);
+
+// get latest water level per station
+Route::get('/water-levels/latest', [WaterLevelController::class, 'latestPerStation']);
+
+// save realtime sensor data
+Route::post('/sensor-readings', [SensorReadingController::class, 'store']);
+
+
 

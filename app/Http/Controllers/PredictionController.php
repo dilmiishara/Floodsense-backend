@@ -76,4 +76,55 @@ class PredictionController extends Controller
             ], 500);
         }
     }
+
+
+
+    // Active/Upcoming alerts — forecast_time is in the future
+    public function activeAlertsMobile()
+    {
+        try {
+            $predictions = Prediction::whereIn('flood_risk_level', [
+                'Alert', 'Minor Flood', 'Major Flood'
+            ])
+                ->where('forecast_time', '>=', now())
+                ->orderBy('created_at', 'desc')  // soonest forecast first
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $predictions,
+                'count'   => $predictions->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+// History — forecast_time is in the past
+    public function historyAlertsMobile()
+    {
+        try {
+            $predictions = Prediction::whereIn('flood_risk_level', [
+                'Alert', 'Minor Flood', 'Major Flood'
+            ])
+                ->where('forecast_time', '<', now())
+                ->orderBy('forecast_time', 'desc')
+                ->limit(50)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $predictions,
+                'count'   => $predictions->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
