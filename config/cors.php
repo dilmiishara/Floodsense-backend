@@ -18,6 +18,7 @@ return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'origins' => ['http://localhost:5173'],  // your React dev URL
+    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000'],
 
     'allowed_methods' => ['*'],
 
