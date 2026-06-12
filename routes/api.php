@@ -102,6 +102,8 @@ Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMaste
 
 // This allows Postman to "talk" to your controller
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
+// Get latest sensor reading for IoT card
+Route::get('/sensor-readings/latest', [SensorDataController::class, 'getLatest']);
 
 // Get all thresholds for the table
 Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
