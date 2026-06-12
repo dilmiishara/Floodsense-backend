@@ -153,3 +153,4 @@ use App\Http\Controllers\FloodChartController;
 Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
 Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
 
+Route::get('/flood-predictions/{station}', [FloodChartController::class, 'floodPredictions']);
