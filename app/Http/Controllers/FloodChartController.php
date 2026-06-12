@@ -11,7 +11,7 @@ class FloodChartController extends Controller
         $rows = DB::table('water_level_logs')
             ->where('station_name', $station)
             ->orderBy('recorded_at', 'desc')
-            ->limit(7)
+            ->limit(13)
             ->get()
             ->reverse()
             ->values();
