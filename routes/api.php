@@ -94,6 +94,11 @@ Route::post('/alerts/generate', [AlertController::class, 'store']);
 Route::put('/alerts/{id}/resolve', [AlertController::class, 'resolve']);
 
 
+// Predictions
+Route::get('/predictions', [PredictionController::class, 'index']);
+Route::get('/predictions/alerts', [PredictionController::class, 'getAlertPredictions']);
+
+
 //manage Dashboard
 Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMasterDashboardData']);
 
@@ -103,7 +108,7 @@ Route::post('/sensor-data', [SensorDataController::class, 'store']);
 // Get all thresholds for the table
 Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
 
-// Update or Create a thresholdphp
+// Update or Create a threshold
 Route::post('/alert-thresholds', [AlertThresholdController::class, 'store']);
 
 // Manage Safe locations
@@ -151,27 +156,3 @@ Route::prefix('sensor-nodes')->group(function () {
     Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
 });
 
-// FCM Token Management Routes
-Route::post('/fcm/save-token', [FCMTokenController::class, 'saveToken']);
-Route::post('/fcm/delete-token', [FCMTokenController::class, 'deleteToken']);
-
-// Send an alert notification to users (e.g., push notification or in-app alert)
-Route::post('/alerts/send-notification', [AlertController::class, 'sendAlertNotification']);
-
-// Public routes
-Route::post('/mobile/register', [MobileAuthController::class, 'register']);
-Route::post('/mobile/login', [MobileAuthController::class, 'login']);
-Route::post('/mobile/forgot-password', [MobileAuthController::class, 'forgotPassword']);
-Route::post('/mobile/verify-otp', [MobileAuthController::class, 'verifyOtp']);
-Route::post('/mobile/reset-password', [MobileAuthController::class, 'resetPassword']);
-
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/mobile/logout', [MobileAuthController::class, 'logout']);
-    Route::get('/mobile/profile', [MobileAuthController::class, 'profile']);
-    Route::put('/mobile/profile/update', [MobileAuthController::class, 'updateProfile']);
-});
-
-
-//get latest updated 3 rows from the prediction table.
-Route::get('/predictions/latest', [PredictionController::class, 'latest']);
