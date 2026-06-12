@@ -24,13 +24,15 @@ class FloodChartController extends Controller
         $past    = $rows->slice(0, $rows->count() - 1)->values();
 
         return response()->json([
-            'past'    => $past->map(fn($r) => [
-                'recorded_at' => $r->recorded_at,
-                'water_level' => (float) $r->water_level,
+        'past'    => $past->map(fn($r) => [
+                'recorded_at'  => $r->recorded_at,
+                'water_level'  => (float) $r->water_level,
+                'alert_status' => $r->alert_status,
             ]),
             'current' => [
-                'recorded_at' => $current->recorded_at,
-                'water_level' => (float) $current->water_level,
+                'recorded_at'  => $current->recorded_at,
+                'water_level'  => (float) $current->water_level,
+                'alert_status' => $current->alert_status,
             ],
         ]);
     }
