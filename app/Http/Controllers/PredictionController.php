@@ -13,7 +13,7 @@ class PredictionController extends Controller
      */
     public function getAlertPredictions()
     {
-        $predictions = Prediction::whereIn('flood_risk_level', ['Alert', 'Minor', 'Major'])
+        $predictions = Prediction::whereIn('flood_risk_level', ['Alert', 'Minor Flood', 'Major Flood'])
             ->orderBy('forecast_time', 'desc')
             ->get();
 

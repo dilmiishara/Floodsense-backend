@@ -61,7 +61,7 @@ if ($isPredictionReport) {
 }
     // ✅ Only include Alert, Minor, Major — exclude Normal records
 $data = $query
-    ->whereIn('flood_risk_level', ['Alert', 'Minor', 'Major'])
+    ->whereIn('flood_risk_level', ['Alert', 'Minor Flood', 'Major Flood'])
     ->orderBy('forecast_time', 'desc')
     ->get();
     $areaName = $hasAreaId ? (Area::find($request->area_id)?->name ?? 'All Stations') : 'All Stations';
