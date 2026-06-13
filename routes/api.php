@@ -12,8 +12,11 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PredictionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FloodChartController;
+
 
 // Login route
 Route::post('/login', [AuthController::class, 'login']);
@@ -80,9 +83,9 @@ Route::get('/areas', [UserController::class, 'getAreas']);
 Route::get('/roles', [UserController::class, 'getRoles']);
 
 // Manage Reports
-Route::get('/reports', [ReportController::class, 'index']);      
+Route::get('/reports', [ReportController::class, 'index']);
 Route::post('/reports', [ReportController::class, 'store']);
-Route::delete('/reports/{id}', [ReportController::class, 'destroy']); 
+Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
 
 //Manage Alerts
 Route::get('/alerts/active', [AlertController::class, 'getActiveAlerts']);
@@ -91,11 +94,18 @@ Route::post('/alerts/generate', [AlertController::class, 'store']);
 Route::put('/alerts/{id}/resolve', [AlertController::class, 'resolve']);
 
 
+// Predictions
+Route::get('/predictions', [PredictionController::class, 'index']);
+Route::get('/predictions/alerts', [PredictionController::class, 'getAlertPredictions']);
+
+
 //manage Dashboard
 Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMasterDashboardData']);
 
 // This allows Postman to "talk" to your controller
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
+// Get latest sensor reading for IoT card
+Route::get('/sensor-readings/latest', [SensorDataController::class, 'getLatest']);
 
 // Get all thresholds for the table
 Route::get('/alert-thresholds', [AlertThresholdController::class, 'index']);
@@ -148,9 +158,11 @@ Route::prefix('sensor-nodes')->group(function () {
     Route::patch('/{id}/ping', [SensorNodeController::class, 'ping']);        // PATCH /api/sensor-nodes/{id}/ping
 });
 
-use App\Http\Controllers\FloodChartController;
 
 Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
 Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
 
 Route::get('/flood-predictions/{station}', [FloodChartController::class, 'floodPredictions']);
+
+//get latest updated 3 rows from the prediction table.
+Route::get('/predictions/latest', [PredictionController::class, 'latest']);
