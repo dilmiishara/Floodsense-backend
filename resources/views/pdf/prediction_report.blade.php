@@ -291,9 +291,9 @@
 
         {{-- ── Stats Row ── --}}
         @php
-            $alertCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'alert')->count();
-            $minorCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'minor')->count();
-            $majorCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'major')->count();
+       $alertCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'alert')->count();
+$minorCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'minor flood')->count();
+$majorCount = $data->filter(fn($i) => strtolower($i->flood_risk_level) === 'major flood')->count();
         @endphp
         <table class="stats-table">
             <tr>
