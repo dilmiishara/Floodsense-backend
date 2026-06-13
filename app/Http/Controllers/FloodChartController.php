@@ -62,4 +62,33 @@ class FloodChartController extends Controller
             ]),
         ]);
     }
+
+    public function floodPredictions($station)
+{
+    // Get the latest batch (max created_at) for this station
+    $latestBatch = DB::table('predictions')
+        ->where('station_name', $station)
+        ->max('created_at');
+
+    if (!$latestBatch) {
+        return response()->json([]);
+    }
+
+    // Get all rows from that batch ordered by forecast_time
+    $rows = DB::table('predictions')
+        ->where('station_name', $station)
+        ->where('created_at', $latestBatch)
+        ->orderBy('forecast_time', 'asc')
+        ->get();
+
+    return response()->json($rows->map(fn($r) => [
+        'station_name'           => $r->station_name,
+        'forecast_time'          => $r->forecast_time,
+        'predicted_water_level'  => (float) $r->predicted_water_level,
+        'flood_risk_level'       => $r->flood_risk_level,
+        'rainfall'               => (float) $r->rainfall,
+        'temperature'            => (float) $r->temperature,
+        'created_at'             => $r->created_at,
+    ]));
+}
 }

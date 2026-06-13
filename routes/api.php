@@ -162,5 +162,7 @@ Route::prefix('sensor-nodes')->group(function () {
 Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
 Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
 
+Route::get('/flood-predictions/{station}', [FloodChartController::class, 'floodPredictions']);
+
 //get latest updated 3 rows from the prediction table.
 Route::get('/predictions/latest', [PredictionController::class, 'latest']);
