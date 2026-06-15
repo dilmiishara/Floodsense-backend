@@ -16,14 +16,14 @@ use Exception;
 
 class ReportController extends Controller
 {
-    
+
     public function index()
     {
         $reports = Report::with('area')->orderBy('created_at', 'desc')->get();
         return response()->json($reports);
     }
 
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -33,7 +33,7 @@ class ReportController extends Controller
     'from_date'     => 'nullable|date',
     'to_date'       => 'nullable|date',
 ]);
-        
+
         $query = Alert::query();
 
         $isPredictionReport = $request->report_type === 'Flood Prediction Analysis';
@@ -61,7 +61,7 @@ if ($isPredictionReport) {
 }
     // ✅ Only include Alert, Minor, Major — exclude Normal records
 $data = $query
-    ->whereIn('flood_risk_level', ['Alert', 'Minor Flood', 'Major Flood'])
+    ->whereIn('flood_risk_level', ['Alert', 'Minor', 'Major'])
     ->orderBy('forecast_time', 'desc')
     ->get();
     $areaName = $hasAreaId ? (Area::find($request->area_id)?->name ?? 'All Stations') : 'All Stations';
@@ -94,12 +94,12 @@ $data = $query
 
         $format = strtoupper($request->export_format);
         $generatedAt = now()->format('Y-m-d H:i:s');
-        
+
         $fileName = "Report_" . time();
         $filePath = "";
         $output = "";
 
-       
+
         if ($format === 'PDF') {
     $filePath = "reports/" . $fileName . ".pdf";
     $pdfData = [
@@ -212,7 +212,7 @@ $data = $query
                 'type'      => $request->report_type,
                 'format'    => $format,
                 'area_id'   => $hasAreaId ? $request->area_id : null,
-                'file_path' => $filePath, 
+                'file_path' => $filePath,
                 'file_size' => $fileSizeKb,
             ]);
 
@@ -229,17 +229,17 @@ $data = $query
         }
     }
 
-    
+
     public function destroy($id)
     {
         $report = Report::findOrFail($id);
 
-        
+
         if (Storage::disk('public')->exists($report->file_path)) {
             Storage::disk('public')->delete($report->file_path);
         }
 
-       
+
         $report->delete();
 
         return response()->json(['message' => 'Report deleted successfully']);

@@ -6,6 +6,7 @@ use App\Models\Prediction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+
 class PredictionController extends Controller
 {
     /**
@@ -69,6 +70,63 @@ class PredictionController extends Controller
                 'count'   => $predictions->count(),
             ]);
 
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    // Active/Upcoming alerts — forecast_time is in the future
+    public function activeAlertsMobile()
+    {
+        try {
+            // Get latest prediction for each station
+            $latestIds = DB::table('predictions')
+                ->select(DB::raw('MAX(id) as id'))
+                ->groupBy('station_name')
+                ->pluck('id');
+
+            // From those latest predictions, only show flood risk ones
+            $predictions = Prediction::whereIn('id', $latestIds)
+                ->whereIn('flood_risk_level', [
+                    'Alert', 'Minor Flood', 'Major Flood'
+                ])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $predictions,
+                'count'   => $predictions->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+// History — forecast_time is in the past
+    public function historyAlertsMobile()
+    {
+        try {
+            $predictions = Prediction::whereIn('flood_risk_level', [
+                'Alert', 'Minor Flood', 'Major Flood'
+            ])
+                ->where('forecast_time', '<', now())
+                ->orderBy('forecast_time', 'desc')
+                ->limit(50)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data'    => $predictions,
+                'count'   => $predictions->count(),
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

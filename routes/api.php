@@ -15,7 +15,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PredictionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FCMTokenController;
+use App\Http\Controllers\MobileAuthController;
+use App\Http\Controllers\WaterLevelController;
+use App\Http\Controllers\Api\SensorReadingController;
 use App\Http\Controllers\FloodChartController;
+use App\Http\Controllers\UserLocationController;
+use App\Http\Controllers\EmergencyController;
 
 
 // Login route
@@ -104,6 +110,7 @@ Route::get('/dashboard/master-telemetry', [DashboardController::class, 'getMaste
 
 // This allows Postman to "talk" to your controller
 Route::post('/sensor-data', [SensorDataController::class, 'store']);
+
 // Get latest sensor reading for IoT card
 Route::get('/sensor-readings/latest', [SensorDataController::class, 'getLatest']);
 
@@ -166,3 +173,47 @@ Route::get('/flood-predictions/{station}', [FloodChartController::class, 'floodP
 
 //get latest updated 3 rows from the prediction table.
 Route::get('/predictions/latest', [PredictionController::class, 'latest']);
+
+// alerts apis for mobile
+Route::get('/predictions/active-alerts', [PredictionController::class, 'activeAlertsMobile']);
+Route::get('/predictions/history-alerts', [PredictionController::class, 'historyAlertsMobile']);
+
+// get latest water level per station
+Route::get('/water-levels/latest', [WaterLevelController::class, 'latestPerStation']);
+
+// save realtime sensor data
+Route::post('/sensor-readings', [SensorReadingController::class, 'store']);
+
+Route::get('/water-level-history/{station}', [FloodChartController::class, 'history']);
+Route::get('/water-level-predictions/{station}', [FloodChartController::class, 'predictions']);
+
+
+// Public routes
+Route::post('/mobile/register', [MobileAuthController::class, 'register']);
+Route::post('/mobile/login', [MobileAuthController::class, 'login']);
+Route::post('/mobile/forgot-password', [MobileAuthController::class, 'forgotPassword']);
+Route::post('/mobile/verify-otp', [MobileAuthController::class, 'verifyOtp']);
+Route::post('/mobile/reset-password', [MobileAuthController::class, 'resetPassword']);
+
+// save locations of mobile app users
+Route::post('/user/save-location', [UserLocationController::class, 'saveLocation']);
+
+
+// FCM Token Management Routes
+Route::post('/fcm/save-token', [FCMTokenController::class, 'saveToken']);
+Route::post('/fcm/delete-token', [FCMTokenController::class, 'deleteToken']);
+
+// Send an alert notification to users (e.g., push notification or in-app alert)
+Route::post('/alerts/send-notification', [AlertController::class, 'sendAlertNotification']);
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/mobile/logout', [MobileAuthController::class, 'logout']);
+    Route::get('/mobile/profile', [MobileAuthController::class, 'profile']);
+    Route::put('/mobile/profile/update', [MobileAuthController::class, 'updateProfile']);
+});
+
+// Emergency mode
+Route::post('/emergency/toggle', [EmergencyController::class, 'toggle']);
+
+
