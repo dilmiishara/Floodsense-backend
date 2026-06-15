@@ -20,6 +20,8 @@ use App\Http\Controllers\MobileAuthController;
 use App\Http\Controllers\WaterLevelController;
 use App\Http\Controllers\Api\SensorReadingController;
 use App\Http\Controllers\FloodChartController;
+use App\Http\Controllers\UserLocationController;
+use App\Http\Controllers\EmergencyController;
 
 
 // Login route
@@ -193,6 +195,9 @@ Route::post('/mobile/forgot-password', [MobileAuthController::class, 'forgotPass
 Route::post('/mobile/verify-otp', [MobileAuthController::class, 'verifyOtp']);
 Route::post('/mobile/reset-password', [MobileAuthController::class, 'resetPassword']);
 
+// save locations of mobile app users
+Route::post('/user/save-location', [UserLocationController::class, 'saveLocation']);
+
 
 // FCM Token Management Routes
 Route::post('/fcm/save-token', [FCMTokenController::class, 'saveToken']);
@@ -207,5 +212,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/mobile/profile', [MobileAuthController::class, 'profile']);
     Route::put('/mobile/profile/update', [MobileAuthController::class, 'updateProfile']);
 });
+
+// Emergency mode
+Route::post('/emergency/toggle', [EmergencyController::class, 'toggle']);
 
 
