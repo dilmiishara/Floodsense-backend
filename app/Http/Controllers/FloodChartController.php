@@ -89,6 +89,7 @@ class FloodChartController extends Controller
         'rainfall'               => (float) $r->rainfall,
         'temperature'            => (float) $r->temperature,
         'created_at'             => $r->created_at,
+        
     ]));
 }
 }
