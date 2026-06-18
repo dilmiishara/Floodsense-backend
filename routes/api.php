@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\SensorReadingController;
 use App\Http\Controllers\FloodChartController;
 use App\Http\Controllers\UserLocationController;
 use App\Http\Controllers\EmergencyController;
+use Illuminate\Support\Facades\Artisan;
+
 
 
 // Login route
@@ -216,4 +218,11 @@ Route::middleware('auth:sanctum')->group(function () {
 // Emergency mode
 Route::post('/emergency/toggle', [EmergencyController::class, 'toggle']);
 
-
+// check if alerts are available 
+Route::get('/cron/check-alerts', function () {
+    Artisan::call('flood:check-alerts');
+    return response()->json([
+        'status' => 'completed',
+        'output' => Artisan::output()
+    ]);
+});
