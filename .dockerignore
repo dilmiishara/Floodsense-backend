@@ -1,0 +1,9 @@
+.git
+.env
+node_modules
+vendor
+firebase-base64.txt
+storage/app/firebase-credentials.json
+tests
+.idea
+.vscode
