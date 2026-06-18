@@ -27,6 +27,7 @@ auth.json
 /storage/framework/
 /storage/pail
 /bootstrap/cache/*.php
+/storage/app/firebase-credentials.json
 
 # ----------------------
 # Logs
